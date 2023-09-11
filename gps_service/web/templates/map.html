@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>GPS APP</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=993c960b-a383-483b-bdb5-c02feafe1c9f&lang=ru_RU" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+        {% load static %}
+
+        // Replace with your actual JSON data
+
+        const routeData = '{{ data|safe }}';
+        const routeArray = JSON.parse(routeData);
+
+        ymaps.ready(initMap);
+
+        function initMap() {
+
+            const map = new ymaps.Map('map', {
+                center: JSON.parse(routeArray[0].fields.value).slice(0, 2),
+                zoom: 15
+            });
+
+            const coordinatesWithSpeed = routeArray.map(entry => {
+                const jsonString = entry.fields.value;
+                const parsedData = JSON.parse(jsonString);
+                const latitude = parsedData[0];
+                const longitude = parsedData[1];
+                const speed = entry.calc_speed;
+				const date = new Date(entry.fields.timestamp).toLocaleString('ru-RU', {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  second: "numeric",
+				});
+				const name = entry.fields.app_id;
+
+				let lineColor = '#0000FF'; // Default blue color
+
+				if (speed >= 100) {
+					lineColor = '#FF0000'; // Red color for high speed
+				} else if (speed >= 80) {
+					lineColor = '#ff0099';
+				} else if (speed >= 60) {
+					lineColor = '#bf00ff';
+				} else if (speed >= 40) {
+					lineColor = '#2b00ff';
+				} else if (speed >= 20) {
+					lineColor = '#00b7ff';
+				} else if (speed >= 0) {
+					lineColor = '#00ff55';
+				}
+
+                return {
+                    coordinates: [latitude, longitude],
+                    speed: speed,
+					color: lineColor,
+					date: date,
+					name: name
+                };
+            });
+
+            const coordinates = coordinatesWithSpeed.map(data => data.coordinates);
+
+			const lines = [];
+
+			for (let i = 0; i < coordinatesWithSpeed.length - 1; i++) {
+                const placemark = new ymaps.Placemark(
+                    coordinatesWithSpeed[i + 1].coordinates,
+                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed}` },
+					{
+						iconLayout: 'default#image',
+						iconImageHref: '{% static 'point.svg' %}',
+						iconImageSize: [20, 20],
+						iconImageOffset: [-10, -10],
+						   // Определим интерактивную область над картинкой.
+						iconShape: {
+							type: 'Circle',
+							coordinates: [0, 0],
+							radius: 20
+						}
+					}
+                );
+                map.geoObjects.add(placemark);
+
+				const line = new ymaps.Polyline(
+					[coordinatesWithSpeed[i].coordinates, coordinatesWithSpeed[i + 1].coordinates],
+					{},
+					{
+						strokeColor: coordinatesWithSpeed[i].color,
+						strokeWidth: 4,
+						strokeOpacity: 0.7
+					}
+				);
+				lines.push(line);
+				map.geoObjects.add(line); // Добавляем линию на карту
+			}
+
+        }
+    </script>
+</head>
+
+<body>
+<div id="map" style="background-color:#FF0; overflow:hidden"></div>
+</body>
+
+<style type="text/css">
+    html, body, #map {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+</html>
