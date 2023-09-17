@@ -11,7 +11,7 @@ from .models import Data
 class DataListView(ListView):
     model = Data
     template_name = 'map.html'
-    context_object_name = 'data'
+    # context_object_name = 'data'
 
 
 def gps_view(request):
@@ -20,7 +20,8 @@ def gps_view(request):
     # data = list(Data.objects.filter(app_id="rav4").order_by('-id')[:2])
     data_json = json.loads(serialize("json", data))
     # print(speed_from_gps(data_json))
-    return render(request, "map.html", context={'data': json.dumps(speed_from_gps(data_json))})
+    # return render(request, "map.html", context={'data': json.dumps(speed_from_gps(data_json))})
+    return render(request, "map.html", context={'data': json.dumps(data_json)})
 
 
 def speed_from_gps(coord_array):
@@ -42,4 +43,3 @@ def speed_from_gps(coord_array):
         arr.append(coord_array[i])
         # print("Speed: ", round(GD(p1, p2).km * 3600 / t))
     return arr
-

@@ -5,38 +5,33 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="https://api-maps.yandex.ru/2.1/?apikey=993c960b-a383-483b-bdb5-c02feafe1c9f&lang=ru_RU" type="text/javascript">
     </script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script type="text/javascript">
         {% load static %}
 
-        // Replace with your actual JSON data
-
-        const routeData = '{{ data|safe }}';
-        const routeArray = JSON.parse(routeData);
-
-        ymaps.ready(initMap);
-
-        function initMap() {
+        function initMap(routeData) {
+            console.log(routeData);
 
             const map = new ymaps.Map('map', {
-                center: JSON.parse(routeArray[0].fields.value).slice(0, 2),
+                center: JSON.parse(routeData[0].value).slice(0, 2),
                 zoom: 15
             });
 
-            const coordinatesWithSpeed = routeArray.map(entry => {
-                const jsonString = entry.fields.value;
+            const coordinatesWithSpeed = routeData.map(entry => {
+                const jsonString = entry.value;
                 const parsedData = JSON.parse(jsonString);
                 const latitude = parsedData[0];
                 const longitude = parsedData[1];
-                const speed = entry.calc_speed;
-				const date = new Date(entry.fields.timestamp).toLocaleString('ru-RU', {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  second: "numeric",
-				});
-				const name = entry.fields.app_id;
+                const speed = Math.round(parsedData[2]*3.6);
+                const date = new Date(entry.timestamp).toLocaleString('ru', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+				const name = entry.app_id;
 
 				let lineColor = '#0000FF'; // Default blue color
 
@@ -70,7 +65,7 @@
 			for (let i = 0; i < coordinatesWithSpeed.length - 1; i++) {
                 const placemark = new ymaps.Placemark(
                     coordinatesWithSpeed[i + 1].coordinates,
-                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed}` },
+                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed} km/h` },
 					{
 						iconLayout: 'default#image',
 						iconImageHref: '{% static 'point.svg' %}',
@@ -100,6 +95,37 @@
 			}
 
         }
+
+
+        // Здесь выполняется POST-запрос к API и отображение данных на карте
+        const URL_API = '/api/map/';
+        const data = {
+            start_date: '2023-09-16',
+        };
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{csrf_token}}',
+            },
+            body: JSON.stringify(data)
+        };
+
+        fetch(URL_API, requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(routeData => {
+                // Вызываем функцию инициализации карты и передаем данные
+                initMap(routeData);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
     </script>
 </head>
 
