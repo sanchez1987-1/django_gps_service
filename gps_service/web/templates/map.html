@@ -2,144 +2,45 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>GPS APP</title>
+    {% load static %}
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=993c960b-a383-483b-bdb5-c02feafe1c9f&lang=ru_RU" type="text/javascript">
     </script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script type="text/javascript">
-        {% load static %}
-
-        function initMap(routeData) {
-            console.log(routeData);
-
-            const map = new ymaps.Map('map', {
-                center: JSON.parse(routeData[0].value).slice(0, 2),
-                zoom: 15
-            });
-
-            const coordinatesWithSpeed = routeData.map(entry => {
-                const jsonString = entry.value;
-                const parsedData = JSON.parse(jsonString);
-                const latitude = parsedData[0];
-                const longitude = parsedData[1];
-                const speed = Math.round(parsedData[2]*3.6);
-                const date = new Date(entry.timestamp).toLocaleString('ru', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-				const name = entry.app_id;
-
-				let lineColor = '#0000FF'; // Default blue color
-
-				if (speed >= 100) {
-					lineColor = '#FF0000'; // Red color for high speed
-				} else if (speed >= 80) {
-					lineColor = '#ff0099';
-				} else if (speed >= 60) {
-					lineColor = '#bf00ff';
-				} else if (speed >= 40) {
-					lineColor = '#2b00ff';
-				} else if (speed >= 20) {
-					lineColor = '#00b7ff';
-				} else if (speed >= 0) {
-					lineColor = '#00ff55';
-				}
-
-                return {
-                    coordinates: [latitude, longitude],
-                    speed: speed,
-					color: lineColor,
-					date: date,
-					name: name
-                };
-            });
-
-            const coordinates = coordinatesWithSpeed.map(data => data.coordinates);
-
-			const lines = [];
-
-			for (let i = 0; i < coordinatesWithSpeed.length - 1; i++) {
-                const placemark = new ymaps.Placemark(
-                    coordinatesWithSpeed[i + 1].coordinates,
-                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed} km/h` },
-					{
-						iconLayout: 'default#image',
-						iconImageHref: '{% static 'point.svg' %}',
-						iconImageSize: [20, 20],
-						iconImageOffset: [-10, -10],
-						   // Определим интерактивную область над картинкой.
-						iconShape: {
-							type: 'Circle',
-							coordinates: [0, 0],
-							radius: 20
-						}
-					}
-                );
-                map.geoObjects.add(placemark);
-
-				const line = new ymaps.Polyline(
-					[coordinatesWithSpeed[i].coordinates, coordinatesWithSpeed[i + 1].coordinates],
-					{},
-					{
-						strokeColor: coordinatesWithSpeed[i].color,
-						strokeWidth: 4,
-						strokeOpacity: 0.7
-					}
-				);
-				lines.push(line);
-				map.geoObjects.add(line); // Добавляем линию на карту
-			}
-
-        }
-
-
-        // Здесь выполняется POST-запрос к API и отображение данных на карте
-        const URL_API = '/api/map/';
-        const data = {
-            start_date: '2023-09-16',
-        };
-
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{csrf_token}}',
-            },
-            body: JSON.stringify(data)
-        };
-
-        fetch(URL_API, requestOptions)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(routeData => {
-                // Вызываем функцию инициализации карты и передаем данные
-                initMap(routeData);
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            });
-    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.ru.min.js" integrity="sha512-tPXUMumrKam4J6sFLWF/06wvl+Qyn27gMfmynldU730ZwqYkhT2dFUmttn2PuVoVRgzvzDicZ/KgOhWD+KAYQQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css" integrity="sha512-34s5cpvaNG3BknEWSuOncX28vz97bRI59UnVtEEpFX536A7BtZSJHsDyFoCl8S7Dt2TPzcrCEoHBGeM4SUBDBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
-<div id="map" style="background-color:#FF0; overflow:hidden"></div>
+<div class="container-fluid" style="height: 100vh">
+    <div class="row">
+      <div class="input-group date" id="datepicker">
+        <input type="text" class="form-control" id="date"/>
+        <span class="input-group-append">
+          <span class="input-group-text bg-light d-block">
+            <i class="fa fa-calendar"></i>
+          </span>
+        </span>
+      </div>
+    </div>
+    <div class="w-100 p-3" style="background-color: #eee;">
+        <div id="map" style="background-color:#FF0; overflow:hidden"></div>
+    </div>
+</div>
 </body>
-
 <style type="text/css">
-    html, body, #map {
+    #map {
         width: 100%;
-        height: 100%;
+        height: 800px;
         margin: 0;
         padding: 0;
     }
+    .input-group-append {
+      cursor: pointer;
+    }
 </style>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+{% include 'main_js.html' %}
 </html>

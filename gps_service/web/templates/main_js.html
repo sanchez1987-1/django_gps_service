@@ -1,0 +1,210 @@
+<script>
+        {% load static %}
+
+        // Функция для добавления метки на карту
+        function addPlacemark(map, coordinates, hintContent, iconImageHref) {
+            const placemark = new ymaps.Placemark(coordinates, {
+                hintContent: hintContent
+            }, {
+                iconImageSize: [20, 20],
+                iconImageOffset: [-10, -10],
+                iconShape: {
+                    type: 'Circle',
+                    coordinates: [0, 0],
+                    radius: 20
+                }
+            });
+            map.geoObjects.add(placemark);
+        }
+
+        // Функция для определения разницы во времени между двумя точками данных
+        function getTimeDifferenceInSeconds(previousTime, currentTime) {
+            const previousTimestamp = new Date(previousTime.replace(/,/g, '')).getTime();
+            const currentTimestamp = new Date(currentTime.replace(/,/g, '')).getTime();
+            console.log((currentTimestamp - previousTimestamp) / 1000);
+            return (currentTimestamp - previousTimestamp) / 1000; // Возвращаем разницу в секундах
+        }
+
+        function initMap(routeData) {
+            const map = new ymaps.Map('map', {
+                center: JSON.parse(routeData[0].value).slice(0, 2),
+                zoom: 15
+            });
+
+            let previousTime = routeData[0].timestamp; // Время первой точки
+
+            const coordinatesWithSpeed = routeData.map(entry => {
+                const jsonString = entry.value;
+                const parsedData = JSON.parse(jsonString);
+                const latitude = parsedData[0];
+                const longitude = parsedData[1];
+                const speed = Math.floor(parsedData[2]*3.6);
+                const date = new Date(entry.timestamp).toLocaleString('ru', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timestamp = entry.timestamp;
+				const name = entry.app_id;
+
+				let lineColor = '#0000FF'; // Default blue color
+
+				if (speed >= 100) {
+					lineColor = '#FF0000'; // Red color for high speed
+				} else if (speed >= 80) {
+					lineColor = '#ff0099';
+				} else if (speed >= 60) {
+					lineColor = '#bf00ff';
+				} else if (speed >= 40) {
+					lineColor = '#2b00ff';
+				} else if (speed >= 20) {
+					lineColor = '#00b7ff';
+				} else if (speed >= 0) {
+					lineColor = '#00ff55';
+				}
+
+                return {
+                    coordinates: [latitude, longitude],
+                    speed: speed,
+					color: lineColor,
+					date: date,
+					timestamp: timestamp,
+					name: name
+                };
+            });
+
+            // Добавляем метку для конечной точки
+            const startCoordinates = coordinatesWithSpeed[0].coordinates; // Координаты начала
+            addPlacemark(map, startCoordinates, 'Конечная точка маршрута', '{% static 'point-start.png' %}');
+
+            // Добавляем метку для начальной точки
+            const endCoordinates = coordinatesWithSpeed[coordinatesWithSpeed.length - 1].coordinates; // Координаты конца
+            addPlacemark(map, endCoordinates, 'Начальная точка маршрута', '{% static 'point-end.png' %}');
+
+			const lines = [];
+			var counter_stop = 0
+
+			for (let i = 0; i < coordinatesWithSpeed.length - 1; i++) {
+                const placemark = new ymaps.Placemark(
+                    coordinatesWithSpeed[i + 1].coordinates,
+                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed} km/h` },
+					{
+						iconLayout: 'default#image',
+						iconImageHref: '{% static 'point.svg' %}',
+						iconImageSize: [20, 20],
+						iconImageOffset: [-10, -10],
+						   // Определим интерактивную область над картинкой.
+						iconShape: {
+							type: 'Circle',
+							coordinates: [0, 0],
+							radius: 20
+						}
+					}
+                );
+                map.geoObjects.add(placemark);
+
+                const timeDifference = getTimeDifferenceInSeconds(coordinatesWithSpeed[i+1].timestamp, coordinatesWithSpeed[i].timestamp);
+
+                if (coordinatesWithSpeed[i+1].speed == 0) {
+                    counter_stop = counter_stop + 1;
+                } else {
+                    counter_stop = 0;
+                }
+
+                if (timeDifference > 120 || counter_stop == 20) { // Если разница больше 2 минут (120 секунд)
+                    const stopCoordinates = coordinatesWithSpeed[i+1].coordinates;
+                    addPlacemark(map, stopCoordinates, 'Время остановки: '+ Math.round(timeDifference/60) + ' мин.', '{% static 'point-stop.png' %}');
+                }
+
+				const line = new ymaps.Polyline(
+					[coordinatesWithSpeed[i].coordinates, coordinatesWithSpeed[i + 1].coordinates],
+					{ hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed} km/h` },
+					{
+						strokeColor: coordinatesWithSpeed[i].color,
+						strokeWidth: 4,
+						strokeOpacity: 0.7
+					}
+				);
+				lines.push(line);
+				map.geoObjects.add(line); // Добавляем линию на карту
+			}
+
+        }
+
+
+        // Здесь выполняется POST-запрос к API и отображение данных на карте
+        const URL_API = '/api/map/';
+        var now = new Date().toISOString().split('T')[0];
+
+        var data = {
+            start_date: now,
+        };
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{csrf_token}}',
+            },
+            body: JSON.stringify(data)
+        };
+
+        fetch(URL_API, requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(routeData => {
+                // Вызываем функцию инициализации карты и передаем данные
+                initMap(routeData);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+
+        $(function(){
+          $('#datepicker').datepicker(
+            {
+                language:'ru'
+            }
+          );
+        }).on('changeDate', function(e) {
+            //$('#other-input').val(e.format(0,"dd/mm/yyyy"));
+            //alert(e.date);
+            //alert(e.format(0,"yyyy-mm-dd"));
+            //console.log(e.date);
+            var data = {
+                date: e.format(0,"yyyy-mm-dd"),
+            };
+
+            const requestOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{csrf_token}}',
+                },
+                body: JSON.stringify(data)
+            };
+            $('#map').empty();
+            fetch(URL_API, requestOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(routeData => {
+                    // Вызываем функцию инициализации карты и передаем данные
+                    initMap(routeData);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        });
+
+</script>
