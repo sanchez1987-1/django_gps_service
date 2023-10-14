@@ -21,7 +21,6 @@
         function getTimeDifferenceInSeconds(previousTime, currentTime) {
             const previousTimestamp = new Date(previousTime.replace(/,/g, '')).getTime();
             const currentTimestamp = new Date(currentTime.replace(/,/g, '')).getTime();
-            console.log((currentTimestamp - previousTimestamp) / 1000);
             return (currentTimestamp - previousTimestamp) / 1000; // Возвращаем разницу в секундах
         }
 
@@ -88,23 +87,25 @@
 			var counter_stop = 0
 
 			for (let i = 0; i < coordinatesWithSpeed.length - 1; i++) {
-                const placemark = new ymaps.Placemark(
-                    coordinatesWithSpeed[i + 1].coordinates,
-                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed} km/h` },
-					{
-						iconLayout: 'default#image',
-						iconImageHref: '{% static 'point.svg' %}',
-						iconImageSize: [20, 20],
-						iconImageOffset: [-10, -10],
-						   // Определим интерактивную область над картинкой.
-						iconShape: {
-							type: 'Circle',
-							coordinates: [0, 0],
-							radius: 20
-						}
-					}
-                );
-                map.geoObjects.add(placemark);
+<!--                const placemark = new ymaps.Placemark(-->
+<!--                    coordinatesWithSpeed[i + 1].coordinates,-->
+<!--                    { hintContent: `Name: ${coordinatesWithSpeed[i + 1].name}<br>Date: ${coordinatesWithSpeed[i + 1].date}<br>Speed: ${coordinatesWithSpeed[i + 1].speed} km/h` },-->
+<!--					{-->
+<!--						iconLayout: 'default#image',-->
+<!--						iconImageHref: '{% static 'point.svg' %}',-->
+<!--						iconImageSize: [20, 20],-->
+<!--						iconImageOffset: [-10, -10],-->
+<!--						   // Определим интерактивную область над картинкой.-->
+<!--						iconShape: {-->
+<!--							type: 'Circle',-->
+<!--							coordinates: [0, 0],-->
+<!--							radius: 20-->
+<!--						}-->
+<!--					}-->
+<!--                );-->
+<!--                map.geoObjects.add(placemark);-->
+
+                console.log(coordinatesWithSpeed[i + 1].date);
 
                 const timeDifference = getTimeDifferenceInSeconds(coordinatesWithSpeed[i+1].timestamp, coordinatesWithSpeed[i].timestamp);
 

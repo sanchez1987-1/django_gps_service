@@ -18,11 +18,11 @@ class DataList(APIView):
         edate = json_data.get('end_date')
         date = json_data.get('date')
         if sdate and edate:
-            queryset = DataApi.objects.filter(app_id="rav4", timestamp__range=[sdate, edate]).order_by('-id')
+            queryset = DataApi.objects.filter(app_id="rav4", timestamp__range=[sdate, edate]).order_by('-timestamp')
         elif sdate:
-            queryset = DataApi.objects.filter(app_id="rav4", timestamp__gte=sdate).order_by('-id')
+            queryset = DataApi.objects.filter(app_id="rav4", timestamp__gte=sdate).order_by('-timestamp')
         elif date:
-            queryset = DataApi.objects.filter(app_id="rav4", timestamp__date=date).order_by('-id')
+            queryset = DataApi.objects.filter(app_id="rav4", timestamp__date=date).order_by('-timestamp')
         else:
             queryset = DataApi.objects.filter(app_id="rav4").order_by('-id')
         serializer_for_queryset = DataApiSerializer(
