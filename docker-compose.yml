@@ -6,7 +6,7 @@ services:
     volumes:
       - ./gps_service:/app
     ports:
-      - "8000:8000"
+      - "8008:8008"
     env_file:
       - ./gps_service/.env
     networks:
