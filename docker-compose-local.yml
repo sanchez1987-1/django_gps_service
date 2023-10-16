@@ -9,8 +9,3 @@ services:
       - "8000:8000"
     env_file:
       - ./gps_service/.env
-    networks:
-      - postgres_network_db
-networks:
-  postgres_network_db:
-    external: true
