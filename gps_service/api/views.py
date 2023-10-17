@@ -33,3 +33,4 @@ class DataList(APIView):
             data=serializer_for_queryset.data,
             status=200,
         )
+
