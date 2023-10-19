@@ -11,8 +11,6 @@ services:
       - ./gps_service/.env
     networks:
       - postgres_network_db
-    environment:
-      - DEBUG=off
 networks:
   postgres_network_db:
     external: true
