@@ -1,4 +1,7 @@
+import hashlib
+
 from django.db import models
+from django.forms import PasswordInput
 from rest_framework import serializers
 
 
@@ -12,6 +15,8 @@ class DataApi(models.Model):
         db_table = "data"
         managed = False
 
+    def __str__(self):
+        return self.app_id
 
 class DataApiSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,3 +34,14 @@ class UserParamsApi(models.Model):
     class Meta:
         db_table = "user_params"
         managed = False
+
+    def save(self, *args, **kwargs):
+        md5 = hashlib.md5()
+        md5.update(self.app_pass.encode('utf-8'))
+        self.app_pass = md5.hexdigest()
+        super(UserParamsApi, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.app_params
+
+

@@ -1,11 +1,12 @@
 import json
 
+from django.forms import model_to_dict
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import DataApi, DataApiSerializer
+from .models import DataApi, DataApiSerializer, UserParamsApi
 
 
 class DataList(APIView):
@@ -34,3 +35,15 @@ class DataList(APIView):
             status=200,
         )
 
+class UserParamList(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        id = request.user
+        queryset = UserParamsApi.objects.filter(app_id=id).first()
+        context = model_to_dict(queryset)["app_params"]
+        return Response(
+            data=json.loads(context),
+            status=200,
+        )
