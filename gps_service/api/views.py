@@ -42,8 +42,13 @@ class UserParamList(APIView):
     def get(self, request):
         id = request.user
         queryset = UserParamsApi.objects.filter(app_id=id).first()
-        context = model_to_dict(queryset)["app_params"]
-        return Response(
-            data=json.loads(context),
-            status=200,
-        )
+        if queryset:
+            context = model_to_dict(queryset)["app_params"]
+            return Response(
+                data=json.loads(context),
+                status=200,
+            )
+        else:
+            return Response(
+                status=404,
+            )
