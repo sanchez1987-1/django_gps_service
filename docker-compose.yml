@@ -3,7 +3,7 @@ services:
   web:
     build: .
     command:
-      - python manage.py collectstatic
+      - python manage.py collect-static
       - python manage.py runserver 0.0.0.0:8008
     volumes:
       - ./gps_service:/app
