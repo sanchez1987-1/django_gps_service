@@ -1,6 +1,9 @@
 import json
+from datetime import datetime
 
 from django.forms import model_to_dict
+from django.http import JsonResponse
+from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -35,6 +38,7 @@ class DataList(APIView):
             status=200,
         )
 
+
 class UserParamList(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -52,3 +56,72 @@ class UserParamList(APIView):
             return Response(
                 status=404,
             )
+
+
+class DataLoad(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        content_type = request.headers['Content-Type']
+        app_id = request.headers.get('X-App-ID')
+        print(request.data)
+
+        serializer = DataApiSerializer(
+            content_type = content_type,
+            value = request.data,
+            timestamp = datetime.utcnow().isoformat(),
+            app_id = app_id,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def post(self, request):
+    #     content_type = request.headers['Content-Type']
+    #     app_id = request.headers.get('X-App-ID')
+    #     msg = ""
+    #
+    #     serializer = DataApiSerializer(data=request.data)
+    #
+    #     date = ""
+    #     # print(request.data)
+    #     data = request.POST
+    #
+    #     try:
+    #         if 'application/json' in content_type:
+    #             if data.get('value'):
+    #                 value = str(data.get('value'))
+    #                 date = str(data.get('date'))
+    #             else:
+    #                 value = json.dumps(data)
+    #                 date = str(data.get('date'))
+    #         else:
+    #             value = data.get('value')
+    #
+    #         print(serializer)
+    #
+    #         if value is None or not app_id:
+    #             return Response(status=status.HTTP_400_BAD_REQUEST)
+    #
+    #         if date:
+    #             timestamp = date
+    #         else:
+    #             timestamp = datetime.utcnow().isoformat()
+    #
+    #         # conn = connect_to_database()
+    #         # cursor = conn.cursor()
+    #         # cursor.execute("SELECT * FROM data WHERE (content_type, value, timestamp, app_id) in ((%s, %s, %s, %s))", (content_type, value, timestamp, app_id))
+    #         # data = cursor.fetchall()
+    #         # if not data:
+    #         #     cursor.execute('INSERT INTO data (content_type, value, timestamp, app_id) VALUES (%s, %s, %s, %s)', (content_type, value, timestamp, app_id))
+    #         #     conn.commit()
+    #         #     msg = jsonify({'message': 'Data saved successfully'})
+    #         # else:
+    #         #     msg = jsonify({'message': 'Double data'})
+    #         # conn.close()
+    #     except Exception as err:
+    #         msg = f"Unexpected {err=}, {type(err)=}"
+    #         print(msg)
+    #     return JsonResponse(msg, safe=False, status=status.HTTP_400_BAD_REQUEST)
