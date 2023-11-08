@@ -65,18 +65,14 @@ class DataLoad(APIView):
     def post(self, request):
         content_type = request.headers['Content-Type']
         app_id = request.headers.get('X-App-ID')
-        print(request.data)
+        data = request.data
+        print(data)
 
-        serializer = DataApiSerializer(
-            content_type = content_type,
-            value = request.data,
-            timestamp = datetime.utcnow().isoformat(),
-            app_id = app_id,
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = DataApiSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, status=DataApi.SENT)
+        return Response(status=status.HTTP_201_CREATED)
 
     # def post(self, request):
     #     content_type = request.headers['Content-Type']
