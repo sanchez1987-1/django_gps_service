@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 
 from django.forms import model_to_dict
-from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
