@@ -1,8 +1,8 @@
 import hashlib
 
 from django.db import models
-from django.forms import PasswordInput
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class DataApi(models.Model):
@@ -22,7 +22,12 @@ class DataApiSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataApi
         fields = '__all__'
-
+        validators = [
+            UniqueTogetherValidator(
+                queryset=DataApi.objects.all(),
+                fields=['content_type', 'value', 'app_id']
+            )
+        ]
 
 class UserParamsApi(models.Model):
     param_id = models.AutoField(primary_key=True)

@@ -63,61 +63,18 @@ class DataLoad(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        content_type = request.headers['Content-Type']
-        app_id = request.headers.get('X-App-ID')
-        data = request.data
-        print(data)
+        try:
+            data = dict()
+            data['value'] = json.dumps(request.data)
+            data['content_type'] = request.headers['Content-Type']
+            data['app_id'] = request.headers['X-App-ID']
+            data['timestamp'] = datetime.now().isoformat()
 
-        serializer = DataApiSerializer(data=request.data)
+            serializer = DataApiSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user, status=DataApi.SENT)
-        return Response(status=status.HTTP_201_CREATED)
-
-    # def post(self, request):
-    #     content_type = request.headers['Content-Type']
-    #     app_id = request.headers.get('X-App-ID')
-    #     msg = ""
-    #
-    #     serializer = DataApiSerializer(data=request.data)
-    #
-    #     date = ""
-    #     # print(request.data)
-    #     data = request.POST
-    #
-    #     try:
-    #         if 'application/json' in content_type:
-    #             if data.get('value'):
-    #                 value = str(data.get('value'))
-    #                 date = str(data.get('date'))
-    #             else:
-    #                 value = json.dumps(data)
-    #                 date = str(data.get('date'))
-    #         else:
-    #             value = data.get('value')
-    #
-    #         print(serializer)
-    #
-    #         if value is None or not app_id:
-    #             return Response(status=status.HTTP_400_BAD_REQUEST)
-    #
-    #         if date:
-    #             timestamp = date
-    #         else:
-    #             timestamp = datetime.utcnow().isoformat()
-    #
-    #         # conn = connect_to_database()
-    #         # cursor = conn.cursor()
-    #         # cursor.execute("SELECT * FROM data WHERE (content_type, value, timestamp, app_id) in ((%s, %s, %s, %s))", (content_type, value, timestamp, app_id))
-    #         # data = cursor.fetchall()
-    #         # if not data:
-    #         #     cursor.execute('INSERT INTO data (content_type, value, timestamp, app_id) VALUES (%s, %s, %s, %s)', (content_type, value, timestamp, app_id))
-    #         #     conn.commit()
-    #         #     msg = jsonify({'message': 'Data saved successfully'})
-    #         # else:
-    #         #     msg = jsonify({'message': 'Double data'})
-    #         # conn.close()
-    #     except Exception as err:
-    #         msg = f"Unexpected {err=}, {type(err)=}"
-    #         print(msg)
-    #     return JsonResponse(msg, safe=False, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception as err:
+            msg = f"Unexpected {err=}, {type(err)=}"
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
