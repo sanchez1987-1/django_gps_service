@@ -1,3 +1,4 @@
 /venv/*
 .env
 /gps_service/static/*
+/gps_service/uwsgi.log

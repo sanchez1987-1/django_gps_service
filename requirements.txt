@@ -21,3 +21,4 @@ views==0.3
 wheel==0.37.1
 xlwt==1.3.0
 Languages
+uwsgi
