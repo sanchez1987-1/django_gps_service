@@ -73,7 +73,7 @@ class DataLoad(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            return Response(status=status.HTTP_201_CREATED)
+            return Response('OK', status=status.HTTP_200_OK)
         except Exception as err:
             msg = f"Unexpected {err=}, {type(err)=}"
             print(msg)
