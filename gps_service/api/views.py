@@ -77,4 +77,4 @@ class DataLoad(APIView):
         except Exception as err:
             msg = f"Unexpected {err=}, {type(err)=}"
             print(msg)
-            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+            return Response(msg, status=status.HTTP_204_NO_CONTENT)
