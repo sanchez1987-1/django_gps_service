@@ -29,3 +29,4 @@ urlpatterns = [
     path('web/user_params/', api.views.UserParamList.as_view()),
     path('web/data', api.views.DataLoad.as_view()),
 ]
+
