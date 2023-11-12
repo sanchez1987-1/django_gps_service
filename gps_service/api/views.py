@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from django.forms import model_to_dict
+from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -15,19 +16,22 @@ class DataList(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        json_data = request.data
-        sdate = json_data.get('start_date')
-        edate = json_data.get('end_date')
-        date = json_data.get('date')
+    def get(self, request):
+        id = request.user
+        json_data = request.GET
+        sdate = parse_date(str(json_data.get('start_date')))
+        edate = parse_date(str(json_data.get('end_date')))
+        date = parse_date(str(json_data.get('date')))
+        print(id)
         if sdate and edate:
-            queryset = DataApi.objects.filter(app_id="rav4", timestamp__range=[sdate, edate]).order_by('-timestamp')
+            queryset = DataApi.objects.filter(app_id=id, timestamp__range=[sdate, edate]).order_by('-timestamp')
         elif sdate:
-            queryset = DataApi.objects.filter(app_id="rav4", timestamp__gte=sdate).order_by('-timestamp')
+            queryset = DataApi.objects.filter(app_id=id, timestamp__gte=sdate).order_by('-timestamp')
         elif date:
-            queryset = DataApi.objects.filter(app_id="rav4", timestamp__date=date).order_by('-timestamp')
+            queryset = DataApi.objects.filter(app_id=id, timestamp__date=date).order_by('-timestamp')
         else:
-            queryset = DataApi.objects.filter(app_id="rav4").order_by('-id')
+            queryset = DataApi.objects.filter(app_id=id).order_by('-timestamp')
+
         serializer_for_queryset = DataApiSerializer(
             instance=queryset,  # Передаём набор записей
             many=True  # Указываем, что на вход подаётся именно набор записей
@@ -65,9 +69,13 @@ class DataLoad(APIView):
         try:
             data = dict()
             data['value'] = json.dumps(request.data)
+            if(request.data["date"]):
+                date = parse_datetime(request.data["date"]).isoformat()
+            else:
+                date = datetime.now().isoformat()
             data['content_type'] = request.headers['Content-Type']
             data['app_id'] = request.headers['X-App-ID']
-            data['timestamp'] = datetime.now().isoformat()
+            data['timestamp'] = date
 
             serializer = DataApiSerializer(data=data)
             serializer.is_valid(raise_exception=True)

@@ -8,7 +8,7 @@ services:
     ports:
       - "8008:8008"
     env_file:
-      - ./gps_service/.env
+      - ./gps_service/.env_prom
     networks:
       - postgres_network_db
 networks:
