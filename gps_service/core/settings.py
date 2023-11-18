@@ -169,3 +169,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100
 }
+
+
+CSRF_TRUSTED_ORIGINS = [
+    env('CSRF_TRUSTED_ORIGINS')
+]
