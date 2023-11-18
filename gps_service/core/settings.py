@@ -170,7 +170,13 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100
 }
 
-if (env('CSRF_TRUST') != ''):
-    CSRF_TRUSTED_ORIGINS = [
-        env('CSRF_TRUST'),
-    ]
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.tomymail.cloudns.cl:1443',
+    'https://*.tomymail.cloudns.cl',
+    'https://*.127.0.0.1',
+    'https://127.0.0.1',
+    'https://localhost',
+    'http://*.127.0.0.1',
+    'http://127.0.0.1',
+    'http://localhost',
+]
