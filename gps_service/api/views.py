@@ -4,8 +4,6 @@ from datetime import datetime
 from django.forms import model_to_dict
 from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 

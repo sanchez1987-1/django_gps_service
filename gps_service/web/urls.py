@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 
 from .views import gps_view
 
-from django.contrib import admin, auth
+from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
