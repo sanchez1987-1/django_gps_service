@@ -170,7 +170,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100
 }
 
-
-CSRF_TRUSTED_ORIGINS = [
-    env('CSRF_TRUSTED_ORIGINS')
-]
+if (env('CSRF_TRUST') != ''):
+    CSRF_TRUSTED_ORIGINS = [
+        env('CSRF_TRUST'),
+    ]
