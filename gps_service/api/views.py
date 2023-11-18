@@ -11,10 +11,7 @@ from rest_framework.views import APIView
 
 from .models import DataApi, DataApiSerializer, UserParamsApi
 
-
 class DataList(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         id = request.user
@@ -43,8 +40,6 @@ class DataList(APIView):
 
 
 class UserParamList(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         id = request.user
@@ -62,8 +57,6 @@ class UserParamList(APIView):
 
 
 class DataLoad(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:

@@ -16,11 +16,8 @@ Including another URLconf
 """
 from django.urls import path, include
 
-import api
-
 urlpatterns = [
     path('web/', include('web.urls')),
     path('api/', include('api.urls')),
-    path('user_params/', api.views.UserParamList.as_view()),
 ]
 
