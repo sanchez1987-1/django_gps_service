@@ -11,6 +11,7 @@ services:
       - ./gps_service/.env_prom
     networks:
       - postgres_network_db
+    restart: always
 networks:
   postgres_network_db:
     external: true
