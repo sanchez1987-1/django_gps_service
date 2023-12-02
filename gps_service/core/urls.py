@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.urls import path, include
 
-from gps_service.api import views
+from api import views
 
 urlpatterns = [
     path('web/', include('web.urls')),

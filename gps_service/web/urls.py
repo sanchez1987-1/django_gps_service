@@ -5,7 +5,7 @@ from .views import gps_view
 from django.contrib import admin
 from django.urls import path, include
 
-from ..api import views
+from api import views
 
 urlpatterns = [
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
