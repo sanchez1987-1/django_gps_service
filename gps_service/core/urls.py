@@ -19,5 +19,6 @@ from django.urls import path, include
 urlpatterns = [
     path('web/', include('web.urls')),
     path('api/', include('api.urls')),
+    path('user_params', views.UserParamList.as_view()),
 ]
 
